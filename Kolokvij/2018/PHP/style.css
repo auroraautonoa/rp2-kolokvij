@@ -1,0 +1,23 @@
+.container td
+{
+    min-width:  1.5em;
+    min-height: 1.5em;
+    padding:    0.5em;
+    border:     1px solid black;
+    text-align: center;
+}
+
+td.stack:last-child
+{
+    background-color:   yellow;
+}
+
+td.queue:first-child
+{
+    background-color:   yellow;
+}
+
+td.queue:last-child
+{
+    background-color:   lime;
+}

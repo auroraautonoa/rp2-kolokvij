@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+
+<html lang="hr">
+    <head>
+        <meta charset="utf-8" />
+
+        <title>Tramvajske linije</title>
+
+        <meta name="description" content="Tramvajske linije" />
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.js">
+        </script>
+    </head>
+    <body>
+        <div id="gumbi">
+        </div>
+
+        <canvas id="prikaz" width="1600" height="900">
+        </canvas>
+        
+        <div id="test">
+        </div>
+
+        <script>
+            var boje = new Object;
+
+            $.get(
+                "zadatak2.php",
+                function (data)
+                {
+                    var linije = $.parseJSON(data);
+                    //json parse konvertira json string u objekt da mogu pristupit svojstvima
+                    $.each(linije, function (i, item) {
+                        prikaziGumb(item);
+                    });
+                    console.log(linije);
+                }
+                
+            );
+
+            prikaziGumb = function (linija)
+            {
+                var boja;
+
+                var l;
+                var t = true;
+                var w = false;
+
+                while (t)
+                {
+                    t = false;
+
+                    boja = Math.floor(Math.random() * 16777216);
+                    if ((Math.floor(boja / 65536) % 256 + Math.floor(boja / 256) % 256 + boja % 256) / 3 < 128) /* za bijela slova na tamnoj boji */
+                        w = true;
+                    else
+                        w = false;
+
+                    boja = boja.toString(16);
+                    while (boja.length < 6)
+                        boja = "0" + boja;
+
+                    for (l in boje)
+                        if (boja === boje[l])
+                        {
+                            t = true;
+                            break;
+                        }
+                }
+
+                boje[linija] = boja;
+
+                if (w)
+                    $("#gumbi").append("<input id=\"" + linija + "\" type=\"button\" value=\"" + linija + "\" style=\"background-color: #" + boja + "; color: white;\" />");
+                else
+                    $("#gumbi").append("<input id=\"" + linija + "\" type=\"button\" value=\"" + linija + "\" style=\"background-color: #" + boja + ";\" />");
+                $("#" + linija).on("click", function () {dohvatiLiniju(linija);});
+            }
+
+            dohvatiLiniju = function (linija)
+            {
+                $.get(
+                    "zadatak2.php",
+                    {
+                        L: linija
+                    },
+                    function (data)
+                    {
+                        var stanice = $.parseJSON(data);
+                        console.log(stanice);
+                        prikaziLiniju(linija, stanice);
+                    }
+                );
+            }
+
+            prikaziLiniju = function (linija, stanice)
+            {
+                var imena = Object.keys(stanice);
+                var canvas = $("#prikaz").get(0);
+                var ctx = canvas.getContext("2d");
+
+                var i;
+
+                if (!imena.length)
+                    return;
+
+                ctx.beginPath();
+
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = "#" + boje[linija];
+
+                //postavi polaznu stanicu
+                ctx.moveTo(stanice[imena[0]][0], stanice[imena[0]][1]); 
+                //console.log(stanice[imena[0]][0], stanice[imena[0]][1]);
+                
+                for (i = 1; i < imena.length; ++i)
+                {
+                    //pomakne se npr za precko (50,100) od 50 do 100
+                    // stanice[imena[i]][0] ovo radi ka baza podataka: stanice -> petica, imena[0]-> precko (jer je prvo u nizu), stanice[imena[0]][0] -> dohvati prvi broj u pozicijama za tu stanicu
+                    ctx.lineTo(stanice[imena[i]][0], stanice[imena[i]][1]);
+                    ctx.stroke(); //stroke zapravo crta
+                }
+
+                for (i = 0; i < imena.length; ++i)
+                {
+                    ctx.beginPath();
+                    ctx.fillStyle = "white";
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 1;
+                    ctx.arc(stanice[imena[i]][0], stanice[imena[i]][1], 10, 0, 2 * Math.PI);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.font = "12px Arial";
+                    ctx.fillStyle = "black";
+                    ctx.fillText(imena[i], stanice[imena[i]][0]+5, stanice[imena[i]][1] + 15);
+                }
+            }
+
+        </script>
+    </body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stranke</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+</head>
+<body>
+    Stranka <input type="text" name="ime_stranke" id="ime_stranke"> </input>
+    je dobila <input type="text" name="glasovi" id="glasovi"> </input> glasova.
+    &nbsp
+    <button type="submit" id="spremi">Spremi glasove</button>
+    <br> <br>
+    <canvas width="800" height="600" style="border: solid 1px;" id="canvas"></canvas><br>
+
+    <div id = "container"> </div>
+ 
+
+    <script>
+    $( document ).ready( function() {
+
+        var ctx = $( "#canvas" ).get(0).getContext( "2d" );
+        var stranka = [];
+        var broj_stranki = 0;
+        var ukupan_broj_glasova = 0;
+        var flag = 0;
+
+        $( "#spremi" ).on( "click", function()
+        {
+            ctx.clearRect(0, 0, 800, 600);
+            //dohvati value, ignoriraj ako je prazno
+            var ime_stranke = $( "#ime_stranke" ).val();
+            var broj_glasova = Number($( "#glasovi" ).val());
+            ukupan_broj_glasova += broj_glasova;
+            stranka[broj_stranki] = [ime_stranke, broj_glasova, 0];
+            broj_stranki++;
+
+            var x = 50;
+            var y = 600/(broj_stranki+1);
+            var br = 0;
+            
+            for (var i = 0; i < broj_stranki; i++)
+            {
+                if (stranka[i][2] === 0) {
+                    var prosjek_glasova = stranka[i][1] / ukupan_broj_glasova;
+
+                    ctx.font = "30px Arial";
+                    ctx.fillText(stranka[i][0], x, 40*i+y);
+                    ctx.save();
+                    ctx.fillStyle = "#FF0000";
+                    ctx.fillRect(x+100, 40*i+y-20, prosjek_glasova*300, 20);
+                    ctx.restore();
+                }
+                else
+                    br++;
+            }
+
+            //novi_p = i-br;
+
+
+            var i = 0;      
+            if (ime_stranke !== '') {
+
+                    var chk = document.createElement('input');  // CREATE CHECK BOX.
+                    chk.setAttribute('type', 'checkbox');       // SPECIFY THE TYPE OF ELEMENT.
+                    chk.setAttribute('id', 'cb' + i);     // SET UNIQUE ID.
+                    chk.setAttribute('value', ime_stranke[i]);
+
+                    var lbl = document.createElement('label');  // CREATE LABEL.
+                    lbl.setAttribute('for',  'cb' + i);
+
+                    // CREATE A TEXT NODE AND APPEND IT TO THE LABEL.
+                    lbl.appendChild(document.createTextNode(ime_stranke));
+
+                    // APPEND THE NEWLY CREATED CHECKBOX AND LABEL TO THE <p> ELEMENT.
+                    container.appendChild(chk);
+                    container.appendChild(lbl);
+
+                    i = i + 1;
+            }
+
+   
+            if (flag === 0) {
+            var div = document.createElement('div');
+            div.appendChild(document.createTextNode('Ime koalicije'));
+            document.body.appendChild(div);
+
+
+            var ime_koalicije = document.createElement('input'); 
+            ime_koalicije.setAttribute('type', 'text');       
+            ime_koalicije.setAttribute('id', 'ime_koalicije'); 
+
+            var btn_koalicija = document.createElement('button'); 
+            btn_koalicija.id = "btn_koalicija";
+            btn_koalicija.type = "submit";
+            btn_koalicija.innerHTML = "Napravi koaliciju "; 
+ 
+
+            div.appendChild(ime_koalicije);
+            div.appendChild(btn_koalicija);
+
+            }
+            flag++;
+
+            var koalicija =[[]];
+            var broj_koalicije = 0;
+
+            $( "#btn_koalicija" ).on( "click", function()
+            { 
+                var lista_chck = $('#container');
+                var inputs = lista_chck.find('input');
+                //console.log(inputs.length);
+
+                koalicija[broj_koalicije]=[$('#ime_koalicije').val()];
+                koalicija[broj_koalicije]['bg']=0;
+
+                for(var i=0;i<inputs.length;i++){
+                    if($('#cb'+i).is(":checked")===true){
+                        stranka[i][2]=1;
+                        koalicija[broj_koalicije].push(stranka[i][0]);
+                        console.log(koalicija[0]);
+                        koalicija[broj_koalicije]['bg']+=stranka[i][1];
+                    }
+                }
+                broj_koalicije++;
+                
+                for(var i=0; i < broj_koalicije; i++ ) {
+                    var prosjek_glasova_koalicije = koalicija[i]['bg'] / ukupan_broj_glasova;
+
+                    ctx.font = "30px Arial";
+                    ctx.fillText(koalicija[i][0], x, 40*(i + 2) +y);
+                    ctx.save();
+                    ctx.fillStyle = "#0000FF";
+                    ctx.fillRect(x+100,  40*(i + 2) +y - 20, prosjek_glasova_koalicije*300, 20);
+                    ctx.restore();
+                }
+                
+            });
+        });
+
+
+
+
+    } )
+
+    </script>
+
+</body>
+</html>

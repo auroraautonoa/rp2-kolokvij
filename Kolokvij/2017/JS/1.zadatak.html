@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+</head>
+<body>
+    <input type="radio" name="otvori" id="otvori"> Otvaranje novog prozora visina
+    <input type="text" name="visina" id="visina"> širina
+    <input type="text" name="sirina" id="sirina">
+    <br>
+    <input type="radio" name="zatvori" id="zatvori"> Zatvaranje prozora
+    <br> <br>
+    <canvas id="canvas" width="600px" height="600px" style="border: 1px solid black" oncontextmenu="WhichButton(event)"></canvas>
+    <br>
+    <div id="detalji"></div>
+    <br>
+    <div id="detalji2"></div>
+
+    <script>
+        var A=null;
+
+        $('input[type=radio]').click(function(e) {
+            var value = $(this).val(); 
+            if(this.id==='otvori')  { 
+                prva();
+            }
+            if(this.id==='zatvori')
+                druga();
+        });
+
+        function prva() {
+            A=1;
+        }
+
+        function druga(){
+            A=2;
+        }
+
+        var c = document.getElementById("canvas");
+        var ctx = c.getContext("2d");
+        ctx.beginPath();
+
+        function getCursorPosition(canvas, event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+            if(A===1) otvori(x,y);
+            if(A===2) zatvori();
+        }
+
+        const canvas = document.querySelector('canvas')
+        canvas.addEventListener('mousedown', function(e) {
+            getCursorPosition(canvas, e)
+        })
+
+        var br = 0;
+        function otvori(x,y){
+            br = br + 1;
+            var vis = document.getElementById('visina').value;
+            var sir = document.getElementById('sirina').value;
+
+            if(vis>30) {
+                ctx.restore();
+                ctx.rect(x, y, sir, vis);
+                ctx.stroke();
+                ctx.save();
+
+                ctx.font = "12pt Verdana";
+                ctx.fillText("Prozor " + br, x + 10, y + 20);
+                ctx.rect(x, y, sir, 30);
+                ctx.stroke(); 
+                ctx.save();
+                
+                var poz = (sir - 30) + x;
+                ctx.fillStyle = "#FF0000";
+                ctx.strokeStyle ="black";
+                ctx.fillRect(poz, y, 30, 30);
+                ctx.strokeRect(poz, y, 30, 30);
+                ctx.fillText("X" , poz + 15, y + 20);
+                ctx.strokeText("X", poz + 10, y + 20);
+                ctx.stroke(); 
+            }
+
+            var div = document.getElementById('detalji');
+            div.innerHTML = 'Trenutno je otvoreno ' + br + ' prozora.' ;
+
+            /*var div2 = document.getElementById('detalji2');
+            div2.innerHTML = 'To su: ' ;
+
+            for (var i = 0; i < br; i++)
+            {
+                div2.innerHTML += 'Prozor ' + br + ' ';
+            }*/
+        }
+
+        function zatvori(){
+        }
+        
+
+
+    </script>
+
+</body>
+</html>

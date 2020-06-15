@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Naplatne kućice </title>
+    <style>
+        th, td{
+            min-width: 1in;
+            border: 1px solid black;
+            text-align: center;
+        }
+
+        th{
+            background-color: gray;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.js">
+            </script>
+</head>
+<body>
+    <label for="registracija">Unesi registraciju: </label>
+    <input type="text" id="registracija"> 
+    <button id="novi_auto">Novi auto!</button>
+
+    <br>
+
+    <label for="kucica">Dodaj novu kućicu desno od kućice s oznakom: </label>
+    <select type="text" id="kucica">  </select>
+    <button id="nova_kucica">Nova kućica!</button>
+
+    <table id="tablica">
+      
+            <tr id="pocetak"></tr>
+    
+    </table>
+
+    <script>
+        var n = 4;
+        var kucice = [];
+        
+        
+        for(var i = 0; i < n; ++i)
+            kucice.push([i+1]); //da krene oznaka od 1 a ne od 0
+
+        function prikazi() {
+            var m = 0;
+
+            //ono iz drop down liste
+            $("#kucica").html("");
+            $("#tablica").html("");
+
+            for (i = 0; i < kucice.length; ++i)
+                {
+                    if (!kucice[i].length)
+                        return;
+                    if (kucice[i].length > m)
+                        m = kucice[i].length;
+                    
+                    $("#kucica").append("<option value=\"" + String(i) + "\">" + String(kucice[i][0]) + "</option>\n");
+                }
+
+                $("#tablica").append("<tr id=\"pocetak\">\n</tr>\n");
+                for (j = 0; j < m; ++j)
+                    $("#tablica").append("<tr id=\"red" + String(j) + "\">\n</tr>\n");
+                
+                for (i = 0; i < kucice.length; ++i)
+                {
+                    $("#pocetak").append("<th id=\"p" + String(i) + "\">" + String(kucice[i][0]) + "</th>\n");
+
+                    //klik kucica
+                    $("#p" + String(i)).on("click", function (e) {
+                        pustiAuto(deducirajInd(e)); 
+                        prikazi();
+                    } );
+
+                    //za prikaz auta
+                    for (j = 1; j < kucice[i].length; ++j)
+                        $("#red" + String(j)).append("<td id=\"r-" + String(j) + "-" + String(i) + "\">" + kucice[i][j] + "</td>\n");
+                        
+                    //uklanja auta
+                    for (j = kucice[i].length; j < m; ++j)
+                        $("#red" + String(j)).append("<td id=\"r-" + String(j) + "-" + String(i) + "\" style=\"border: none; background-color: transparent;\"></td>\n");
+                }
+            }
+
+            function dodaj_kucicu(odabrana_kucica){
+
+                /*if (odabrana_kucica >= kucice.length)
+                    return;*/
+
+                //dodaj na indeks nakon odabrane, jednom, povecaj broj kucice
+                kucice.splice(odabrana_kucica + 1, 0, [++n]);
+
+                prikazi();
+            }
+
+            function dodaj_auto(auto){
+                var i = 0;
+                var j;
+
+                if (!kucice.length)
+                    return;
+
+                for (j = 1; j < kucice.length; ++j)
+                    if (kucice[j].length && kucice[j].length < kucice[i].length) //ako zelin dodat sve jedno ispod drugog, onda >
+                        i = j;
+
+                kucice[i].push(auto);
+            }
+
+            function deducirajInd (e)
+            {
+                var x_pos = e.clientX;
+
+                var i = 0;
+                var j;
+
+                if (!kucice.length)
+                    return -1;
+
+                //offset vraca koordinate
+                for (j = 0; j < kucice.length; ++j)
+                {
+                    if ($("#p" + String(j)).offset().left < x_pos)
+                        i = j;
+                }
+
+                return i;
+            }
+
+            function pustiAuto(i) {
+                
+                if ( kucice[i].length < 2) //barem jedno auto ispod
+                    return;
+                
+                kucice[i].splice(1,1);
+            }
+                
+
+
+        prikazi();
+
+        $("#nova_kucica").on("click", function() {
+            var odabrana = Number($("#kucica").val());
+            //console.log(odabrana);
+            dodaj_kucicu(odabrana);
+            prikazi();
+        } );
+
+        $("#novi_auto").on("click", function() {
+            var auto = $("#registracija").val();
+            dodaj_auto(auto);
+            prikazi();
+        } );
+
+    </script>
+</body>
+</html>
