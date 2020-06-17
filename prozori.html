@@ -1,0 +1,229 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>2. kolokvij- zad 1</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+</head>
+<body>
+    <h1>Kolokvij 2 - 2017 - zadatak 1</h1>
+
+    <input type="radio" name="opcija" id="otvori">
+    <label for="otvori">
+        Otvori novi prozor: visina-
+        <input type="number" id="visina" min="30">
+        širina-
+        <input type="number" id="sirina">
+    </label>
+    <br>
+    <input type="radio" name="opcija" id="zatvori">
+    <label for="zatvori">
+        Zatvori prozor
+    </label>
+    <br><br>
+    
+    <canvas id="cnv" height="600" width="600" style="border:solid black 1px;"></canvas>
+    <br>
+    Trenurno je otvoreno <span class="broj">0</span> prozora.
+    To su: <span class="popis"></span>.
+    <script>
+        var strKvadrata = 30;
+        //var box = $('#cnv').get(0).getBoundingClientRect();
+        //var x = event.clientX - box.left, y = event.clientY - box.top;
+        
+        $(document).ready( function()
+        {
+            $( '#cnv' ).on( 'click', transfer );
+
+
+            function transfer( event )
+            {
+                var checkedRadio = $( 'input[name="opcija"]:checked');
+                var box = $('#cnv').get(0).getBoundingClientRect();
+                var x = event.clientX - box.left, y = event.clientY - box.top;
+
+
+                if( checkedRadio.prop('id') === 'otvori')
+                {
+                    var visina = Number($( '#visina' ).val()), sirina = Number($( '#sirina' ).val());
+                    
+                    //console.log( visina + y,  sirina+x );
+                    if(  visina+ y <= 600 &&  sirina+x <= 600  && 105 <= sirina)
+                        crtaj(x, y, sirina, visina);
+                    else
+                        alert('Pogrešne dimenzije!');
+                }
+                else if(checkedRadio.prop('id') === 'zatvori')
+                {
+                    var polje = JSON.parse(localStorage.polje);
+                    
+
+                    for( var i= polje.length-1; i >= 0; --i)
+                    {
+                        if( x < polje[i]['x']+polje[i]['sirina'] && 
+                            x > polje[i]['x']+polje[i]['sirina']-30 &&
+                            y < polje[i]['y']+30 &&
+                            y > polje[i]['y'] )
+                            {
+                                polje.splice(i, 1);//maknuo iz polja
+                                localStorage.polje= JSON.stringify( polje);
+                                //očisti kontekst i ostalo
+                                var ctx = $( '#cnv' ).get(0).getContext( '2d' ), cnv = $( '#cnv' ).get(0);
+
+                                ctx.clearRect(0, 0, cnv.width, cnv.height);
+                                if( polje.length === 0 )
+                                    return;
+                                else{
+                                    var polje = JSON.parse(localStorage.polje);
+                                    $('span.popis').html('');
+                                    $('span.broj').html(polje.length);
+
+                                    for( var i= 0; i < polje.length;++i)
+                                    {
+                                        crtajProzor(polje[i]['x'], polje[i]['y'], polje[i]['sirina'], polje[i]['visina'], polje[i]['broj'] );
+                                    }
+                                }
+                                return;
+                            }
+                        else if(
+                            x < polje[i]['x']+polje[i]['sirina'] && 
+                            x > polje[i]['x'] &&
+                            y < polje[i]['y']+polje[i]['visina'] &&
+                            y > polje[i]['y']
+                        )
+                        return;
+                            
+                    }
+                }
+            }
+            function crtaj(x, y, sirina, visina)
+            {
+                var max = 1;
+                $('span.popis').html('');
+                if( localStorage.getItem('polje')===null )
+                {
+                    var polje = [];
+                    var current = {'x':x, 'y':y, 'sirina': sirina, 'visina':visina, 'broj': 1};
+                    polje.push(current);
+                    localStorage.polje = JSON.stringify(polje);
+                    crtajProzor(x, y, sirina, visina, 1);
+                }
+                else{
+                    var polje = JSON.parse(localStorage.polje);
+                    
+
+                    for( var i= 0; i < polje.length;++i)
+                    {
+                        crtajProzor(polje[i]['x'], polje[i]['y'], polje[i]['sirina'], polje[i]['visina'], polje[i]['broj'] );
+                        if( max <= polje[i]['broj'])
+                            max = Number( polje[i]['broj']) +1;
+                    }
+
+                    crtajProzor(x, y, sirina, visina, max);
+                    var current = {'x':x, 'y':y, 'sirina': sirina, 'visina':visina, 'broj': max};
+                    polje.push(current);
+                    localStorage.polje = JSON.stringify(polje);
+
+                }
+
+                $('span.broj').html(polje.length);
+            }
+
+            function crtajProzor(x, y, sirina, visina, br)
+            {
+                var ctx = $( '#cnv' ).get(0).getContext( '2d' ), cnv = $( '#cnv' ).get(0);
+
+                //  prozor
+                ctx.lineWidth = "0.5";
+                ctx.strokeStyle = "black";
+                ctx.strokeRect( x, y, sirina, visina );
+
+                //traka
+                ctx.fillStyle = "black";
+                ctx.font = "12pt sans-serif";
+                ctx.lineWidth = "0.5";
+                //ctx.strokeStyle = "black";
+                ctx.fillText('Prozor '+br, x+5, y+25);
+                ctx.strokeRect( x, y, sirina, 30 );
+
+
+                //izlaz
+                ctx.fillStyle = 'red';
+                ctx.lineWidth = "0.5";
+                ctx.strokeStyle = "black";
+                ctx.fillRect( x+sirina-30, y, 30, 30 );
+                ctx.fillStyle = 'black';
+                ctx.fillText( 'x' , x+sirina-30+10, y+30-10);
+                ctx.strokeRect( x+sirina-30, y, 30, 30 );
+
+                var str = $('span.popis').html();
+                $('span.popis').html( str + ', Prozor '+ br);
+            }
+
+            function crtaj2()
+            {
+                var red = Number( $('#red').val() );
+                var stupac = Number( $('#stupac').val() );
+                var ctx = $( '#cnv' ).get(0).getContext( '2d' ), cnv = $( '#cnv' ).get(0);
+                $( '#cnv' ).off( 'click', ofarbaj );
+
+                localStorage.boja = 'plava';
+                localStorage.brojObojanih = Number(0);
+
+
+                $( '#cnv' ).show();
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+                ctx.canvas.width = stupac * strKvadrata;
+                ctx.canvas.height = red * strKvadrata;
+
+
+                for ( var j = 0; j < red; ++j )
+                    for( var i = 0; i < stupac; ++i )
+                    {
+                        ctx.lineWidth = "0.5";
+                        ctx.strokeStyle = "black";
+                        ctx.strokeRect( i*strKvadrata, j*strKvadrata, strKvadrata, strKvadrata );
+                    }
+                                
+                $( '#cnv' ).on( 'click', ofarbaj );
+
+                prikazi_broj();
+            }
+
+            function ofarbaj(event)
+            {
+                var box = $('#cnv').get(0).getBoundingClientRect();
+                var x = event.clientX - box.left, y = event.clientY - box.top;
+                var ctx = $( '#cnv' ).get(0).getContext( '2d' ), cnv = $( '#cnv' ).get(0);
+
+                if( localStorage.boja === 'plava'){
+                    ctx.fillStyle = 'blue';
+                    localStorage.boja = 'crvena';
+                }
+                else{
+                    ctx.fillStyle = 'red';
+                    localStorage.boja = 'plava';
+                }
+                ctx.lineWidth = "0.5";
+                ctx.strokeStyle = "black";
+                ctx.fillRect( parseInt(x/strKvadrata)*strKvadrata, parseInt(y/strKvadrata)*strKvadrata, strKvadrata, strKvadrata );
+                ctx.strokeRect( parseInt(x/strKvadrata)*strKvadrata, parseInt(y/strKvadrata)*strKvadrata, strKvadrata, strKvadrata );
+
+                localStorage.brojObojanih++;
+                prikazi_broj();
+            }
+
+            function prikazi_broj()
+            {
+                var span = $('span');
+                
+                span.html( localStorage.brojObojanih );
+                console.log(localStorage.brojObojanih);
+
+                $('p').show();
+            }
+        });
+    </script>
+</body>
+</html>
